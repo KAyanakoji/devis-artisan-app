@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import jsPDF from "jspdf";
 
 interface Item {
   designation: string;
@@ -73,11 +74,82 @@ export default function Home() {
   const totalHT = items.reduce((acc, item) => acc + item.quantite * item.prixUnitaire, 0);
   const totalTTC = totalHT * 1.20;
 
+  // Fonction pour générer et télécharger le PDF
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+
+    // En-tête du PDF
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(30, 41, 59);
+    doc.text("DEVIS PRO", 20, 20);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Date : ${new Date().toLocaleDateString("fr-FR")}`, 20, 28);
+    doc.text("Généré par DevisPro IA - Application Artisans", 20, 34);
+
+    doc.line(20, 40, 190, 40);
+
+    // Tableau des prestations
+    let y = 50;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Désignation", 20, y);
+    doc.text("Qté", 120, y, { align: "center" });
+    doc.text("P.U. HT", 150, y, { align: "right" });
+    doc.text("Total", 190, y, { align: "right" });
+
+    y += 6;
+    doc.line(20, y, 190, y);
+    y += 8;
+
+    doc.setFont("helvetica", "normal");
+    items.forEach((item) => {
+      doc.text(item.designation, 20, y);
+      doc.text(String(item.quantite), 120, y, { align: "center" });
+      doc.text(`${item.prixUnitaire} €`, 150, y, { align: "right" });
+      doc.text(`${item.quantite * item.prixUnitaire} €`, 190, y, { align: "right" });
+      y += 10;
+    });
+
+    y += 5;
+    doc.line(20, y, 190, y);
+    y += 10;
+
+    // Totaux
+    doc.text(`Total HT : ${totalHT} €`, 190, y, { align: "right" });
+    y += 6;
+    doc.text(`TVA (20%) : ${(totalHT * 0.20).toFixed(2)} €`, 190, y, { align: "right" });
+    y += 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(37, 99, 235);
+    doc.text(`Total TTC : ${totalTTC.toFixed(2)} €`, 190, y, { align: "right" });
+
+    // Normes
+    if (normes) {
+      y += 20;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(180, 83, 9);
+      doc.text("Rappels réglementaires & Cahier des charges :", 20, y);
+      y += 6;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(100, 100, 100);
+      doc.text(normes, 20, y);
+    }
+
+    // Téléchargement du fichier
+    doc.save("devis-chantier.pdf");
+  };
+
   return (
     <main className="min-h-screen bg-slate-900 text-slate-100 p-4 sm:p-8 font-sans">
       <div className="max-w-4xl mx-auto space-y-8">
         
-        {/* En-tête du site */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-6 gap-4">
           <div>
             <span className="text-xs font-semibold tracking-wider uppercase text-blue-400 bg-blue-950 px-3 py-1 rounded-full border border-blue-800">
@@ -92,7 +164,6 @@ export default function Home() {
           </p>
         </header>
 
-        {/* Bloc de saisie principal */}
         <div className="bg-slate-800/60 backdrop-blur border border-slate-700/60 rounded-2xl p-6 shadow-xl space-y-6">
           <div className="space-y-2">
             <label className="block text-sm font-medium text-slate-200">
@@ -132,17 +203,19 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Section Devis Généré */}
         {items.length > 0 && (
           <div className="bg-slate-800/60 backdrop-blur border border-slate-700/60 rounded-2xl p-6 shadow-xl space-y-6 animate-fadeIn">
-            <div className="flex justify-between items-center border-b border-slate-700 pb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-700 pb-4 gap-4">
               <h2 className="text-xl font-bold text-white">Chiffrage & Normes Estimés</h2>
-              <span className="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-3 py-1 rounded-full">
-                Prêt à envoyer
-              </span>
+              
+              <button
+                onClick={downloadPDF}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition text-sm shadow-md flex items-center gap-2"
+              >
+                <span>📄 Télécharger en PDF</span>
+              </button>
             </div>
 
-            {/* Tableau des prestations */}
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
@@ -166,7 +239,6 @@ export default function Home() {
               </table>
             </div>
 
-            {/* Totaux */}
             <div className="flex flex-col items-end space-y-1.5 pt-4 border-t border-slate-700 text-sm">
               <div className="flex justify-between w-48 text-slate-400">
                 <span>Total HT :</span>
@@ -182,7 +254,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Encadré Normes */}
             {normes && (
               <div className="bg-amber-950/40 border border-amber-800/60 p-4 rounded-xl text-amber-200 text-xs sm:text-sm space-y-1">
                 <div className="font-bold flex items-center gap-2 text-amber-300">
