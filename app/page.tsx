@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-// Définition d'un type pour les lignes du devis
 interface Item {
   designation: string;
   quantite: number;
@@ -43,13 +42,11 @@ export default function Home() {
     }
   };
 
-  // Fonction d'analyse basique pour simuler l'intelligence du devis
   const handleGenerateDevis = () => {
     const text = description.toLowerCase();
     const detectedItems: Item[] = [];
     let detectedNormes = "";
 
-    // Analyse simple par mots-clés
     if (text.includes("tableau") || text.includes("disjoncteur")) {
       detectedItems.push({ designation: "Fourniture et pose de Tableau Électrique", quantite: 1, prixUnitaire: 450 });
       detectedNormes += "• Norme NF C 15-100 : Protection des circuits et accessibilité du tableau.\n";
@@ -64,7 +61,6 @@ export default function Home() {
       detectedItems.push({ designation: "Installation de points d'éclairage / spots", quantite: 3, prixUnitaire: 50 });
     }
 
-    // Si rien n'est détecté, on met un forfait par défaut
     if (detectedItems.length === 0) {
       detectedItems.push({ designation: "Forfait main d'œuvre et diagnostic", quantite: 1, prixUnitaire: 120 });
       detectedNormes += "• Respect des règles de l'art et DTU en vigueur.\n";
@@ -75,93 +71,124 @@ export default function Home() {
   };
 
   const totalHT = items.reduce((acc, item) => acc + item.quantite * item.prixUnitaire, 0);
-  const totalTTC = totalHT * 1.20; // TVA 20%
+  const totalTTC = totalHT * 1.20;
 
   return (
-    <main className="min-h-screen bg-slate-50 p-8 font-sans">
-      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-6 border border-slate-200 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">
-            Générateur de Devis & Cahier des Charges
-          </h1>
-          <p className="text-slate-600 text-sm">
-            Dictez vos travaux (ex: "Il faut poser un tableau électrique et 4 prises réseau RJ45").
+    <main className="min-h-screen bg-slate-900 text-slate-100 p-4 sm:p-8 font-sans">
+      <div className="max-w-4xl mx-auto space-y-8">
+        
+        {/* En-tête du site */}
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-6 gap-4">
+          <div>
+            <span className="text-xs font-semibold tracking-wider uppercase text-blue-400 bg-blue-950 px-3 py-1 rounded-full border border-blue-800">
+              SaaS B2B Artisans
+            </span>
+            <h1 className="text-3xl font-extrabold tracking-tight mt-2 text-white">
+              DevisPro <span className="text-blue-500">IA</span>
+            </h1>
+          </div>
+          <p className="text-sm text-slate-400 max-w-xs">
+            Générez vos devis et rappels normatifs instantanément par la voix.
           </p>
-        </div>
+        </header>
 
-        {/* Zone de saisie / dictée */}
-        <div className="space-y-4">
-          <label className="block text-sm font-medium text-slate-700">
-            Description du besoin :
-          </label>
+        {/* Bloc de saisie principal */}
+        <div className="bg-slate-800/60 backdrop-blur border border-slate-700/60 rounded-2xl p-6 shadow-xl space-y-6">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-slate-200">
+              Description du chantier :
+            </label>
+            <p className="text-xs text-slate-400">
+              Exemple : &quot;Il faut poser un tableau électrique et 4 prises réseau RJ45&quot;
+            </p>
+          </div>
+
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
-            className="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-slate-900"
-            placeholder="Cliquez sur le micro ou écrivez ici..."
+            className="w-full p-4 bg-slate-900/80 border border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-100 placeholder-slate-500 text-sm transition"
+            placeholder="Cliquez sur le micro pour dicter vos besoins..."
           />
 
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4 items-center justify-between">
             <button
               onClick={toggleListening}
-              className={`px-4 py-2 rounded-lg font-medium transition flex items-center gap-2 ${
+              className={`px-5 py-3 rounded-xl font-medium transition flex items-center gap-3 text-sm shadow-md ${
                 isListening
-                  ? "bg-red-600 text-white animate-pulse"
-                  : "bg-slate-800 text-white hover:bg-slate-700"
+                  ? "bg-red-600 text-white animate-pulse shadow-red-900/50"
+                  : "bg-slate-700 text-white hover:bg-slate-600 border border-slate-600"
               }`}
             >
-              🎤 {isListening ? "Arrêter" : "Dicter à la voix"}
+              <span className="text-lg">🎤</span> {isListening ? "Écoute en cours..." : "Dicter à la voix"}
             </button>
 
             <button
               onClick={handleGenerateDevis}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition text-sm shadow-lg shadow-blue-600/30 flex items-center gap-2"
             >
-              Générer le devis automatique
+              <span>⚡ Générer le chiffrage</span>
             </button>
           </div>
         </div>
 
-        {/* Affichage du Devis généré */}
+        {/* Section Devis Généré */}
         {items.length > 0 && (
-          <div className="mt-8 border-t pt-6 space-y-4">
-            <h2 className="text-xl font-semibold text-slate-800">Chiffrage et Normes Estimés</h2>
-            
+          <div className="bg-slate-800/60 backdrop-blur border border-slate-700/60 rounded-2xl p-6 shadow-xl space-y-6 animate-fadeIn">
+            <div className="flex justify-between items-center border-b border-slate-700 pb-4">
+              <h2 className="text-xl font-bold text-white">Chiffrage & Normes Estimés</h2>
+              <span className="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-3 py-1 rounded-full">
+                Prêt à envoyer
+              </span>
+            </div>
+
+            {/* Tableau des prestations */}
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700">
-                    <th className="p-3 border">Désignation</th>
-                    <th className="p-3 border text-center">Quantité</th>
-                    <th className="p-3 border text-right">P.U. HT (€)</th>
-                    <th className="p-3 border text-right">Total HT (€)</th>
+                  <tr className="border-b border-slate-700 text-slate-400">
+                    <th className="p-3 font-semibold">Désignation des travaux</th>
+                    <th className="p-3 font-semibold text-center">Qté</th>
+                    <th className="p-3 font-semibold text-right">P.U. HT</th>
+                    <th className="p-3 font-semibold text-right">Total HT</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-700/50">
                   {items.map((item, index) => (
-                    <tr key={index} className="text-slate-700">
-                      <td className="p-3 border">{item.designation}</td>
-                      <td className="p-3 border text-center">{item.quantite}</td>
-                      <td className="p-3 border text-right">{item.prixUnitaire} €</td>
-                      <td className="p-3 border text-right">{item.quantite * item.prixUnitaire} €</td>
+                    <tr key={index} className="hover:bg-slate-700/30 transition">
+                      <td className="p-3 text-slate-200">{item.designation}</td>
+                      <td className="p-3 text-center text-slate-300">{item.quantite}</td>
+                      <td className="p-3 text-right text-slate-300">{item.prixUnitaire} €</td>
+                      <td className="p-3 text-right font-medium text-white">{item.quantite * item.prixUnitaire} €</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
 
-            <div className="flex justify-end space-y-1 flex-col text-right text-slate-800">
-              <p>Total HT : <span className="font-bold">{totalHT} €</span></p>
-              <p>TVA (20%) : <span className="font-bold">{(totalHT * 0.20).toFixed(2)} €</span></p>
-              <p className="text-lg font-bold text-blue-600">Total TTC : {totalTTC.toFixed(2)} €</p>
+            {/* Totaux */}
+            <div className="flex flex-col items-end space-y-1.5 pt-4 border-t border-slate-700 text-sm">
+              <div className="flex justify-between w-48 text-slate-400">
+                <span>Total HT :</span>
+                <span className="text-white font-medium">{totalHT} €</span>
+              </div>
+              <div className="flex justify-between w-48 text-slate-400">
+                <span>TVA (20%) :</span>
+                <span className="text-white font-medium">{(totalHT * 0.20).toFixed(2)} €</span>
+              </div>
+              <div className="flex justify-between w-48 text-lg font-bold text-blue-400 pt-2 border-t border-slate-700">
+                <span>Total TTC :</span>
+                <span>{totalTTC.toFixed(2)} €</span>
+              </div>
             </div>
 
             {/* Encadré Normes */}
             {normes && (
-              <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg text-amber-900 text-sm">
-                <h3 className="font-bold mb-1">Rappels des Normes & Cahier des Charges :</h3>
-                <pre className="whitespace-pre-wrap font-sans">{normes}</pre>
+              <div className="bg-amber-950/40 border border-amber-800/60 p-4 rounded-xl text-amber-200 text-xs sm:text-sm space-y-1">
+                <div className="font-bold flex items-center gap-2 text-amber-300">
+                  <span>⚠️</span> Rappels réglementaires & Cahier des charges :
+                </div>
+                <pre className="whitespace-pre-wrap font-sans text-amber-100/90 pl-5">{normes}</pre>
               </div>
             )}
           </div>
